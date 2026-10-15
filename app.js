@@ -308,19 +308,119 @@
       event.preventDefault();
       const method =
         form.querySelector('input[name="payment"]:checked')?.value || 'cod';
+      let senderName = '';
+      let senderPhone = '';
+      let tid = '';
+      let proofName = '';
       if (method === 'easypaisa' || method === 'jazzcash') {
-        const name = form.payment_sender_name?.value?.trim();
-        const phone = form.payment_sender_phone?.value?.trim();
-        const tid = form.payment_txn_id?.value?.trim();
+        senderName = form.payment_sender_name?.value?.trim();
+        senderPhone = form.payment_sender_phone?.value?.trim();
+        tid = form.payment_txn_id?.value?.trim();
         const proof = form.payment_proof?.files?.[0];
-        if (!name || !phone || !tid || !proof) {
+        if (!senderName || !senderPhone || !tid || !proof) {
           toast('Enter wallet name, phone, TID and upload screenshot.');
           return;
         }
+        proofName = proof.name;
       }
+
+      const disc =
+        method === 'easypaisa' || method === 'jazzcash'
+          ? Math.round(subtotal * 0.03 * 100) / 100
+          : 0;
+
+      if (window.PVAdmin?.saveStoreOrder) {
+        window.PVAdmin.saveStoreOrder({
+          order_number: 'PV-DEMO-' + Date.now().toString().slice(-6),
+          customer_name: form.name.value.trim(),
+          phone: form.phone.value.trim(),
+          email: form.email?.value?.trim() || '',
+          address: form.address.value.trim(),
+          city: form.city.value.trim(),
+          payment_method: method,
+          payment_sender_name: senderName,
+          payment_sender_phone: senderPhone,
+          payment_txn_id: tid,
+          payment_proof_name: proofName,
+          subtotal,
+          discount: disc,
+          shipping: SHIPPING,
+          total: Math.max(0, subtotal - disc + SHIPPING),
+          items
+        });
+      }
+
       localStorage.removeItem(CART_KEY);
       updateCartBadges();
       window.location.href = 'order-success.html';
+    });
+  };
+
+  const renderProductDetail = () => {
+    const root = document.getElementById('productDetailRoot');
+    if (!root) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const id = Number(params.get('id') || 0);
+    const catalog = window.PVAdmin?.getProducts
+      ? window.PVAdmin.getProducts()
+      : Object.values(PRODUCTS);
+    const product =
+      catalog.find((p) => Number(p.id) === id) || PRODUCTS[id] || null;
+
+    if (!product) {
+      root.innerHTML = `
+        <div class="empty-state">
+          <h2>Product not found</h2>
+          <p>This product is unavailable or the link is invalid.</p>
+          <a class="btn btn-neon mt-3" href="shop.html">Return to shop</a>
+        </div>`;
+      document.title = 'Product not found | POWERVAULT';
+      return;
+    }
+
+    const image = (product.image || '').replace(/^\.\.\//, '');
+    const price = Number(product.price || 0);
+    const stock = Number(product.stock ?? 99);
+    document.title = product.name + ' | POWERVAULT';
+
+    root.innerHTML = `
+      <div class="product-detail">
+        <div class="detail-art">
+          <div class="art-glow"></div>
+          <img class="detail-product-image" src="${image}" alt="${product.name}">
+        </div>
+        <div class="detail-copy">
+          <div class="eyebrow">${product.category || 'POWERVAULT COLLECTION'}</div>
+          <h1>${product.name}</h1>
+          <p class="muted">${product.description || 'Product description coming soon.'}</p>
+          <div class="detail-price">${money(price)}</div>
+          <p class="muted">Stock: ${stock > 0 ? stock + ' available' : 'Currently unavailable'}</p>
+          ${
+            price > 0 && stock > 0
+              ? `
+            <div class="mt-3">
+              <label class="form-label" for="detailQty">Quantity</label>
+              <input id="detailQty" type="number" class="form-control quantity-input" min="1" max="${Math.min(99, stock)}" value="1">
+              <button type="button" class="btn btn-neon mt-3" id="detailAddCart">Add to Cart</button>
+              <a class="btn btn-outline-glow mt-3 ms-2" href="shop.html">Back to Shop</a>
+            </div>`
+              : `<button disabled class="btn btn-disabled">Price not set or out of stock</button>`
+          }
+          <div class="detail-note">
+            Payments: Cash on Delivery, Easypaisa and JazzCash.
+            Eligible online payments receive a 3% discount.
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById('detailAddCart')?.addEventListener('click', () => {
+      const qty = Math.max(
+        1,
+        Math.min(99, Number(document.getElementById('detailQty')?.value || 1))
+      );
+      addToCart(product.id, qty);
+      toast('Added to cart.');
     });
   };
 
@@ -385,6 +485,7 @@
     bindShop();
     renderCartPage();
     renderCheckoutPage();
+    renderProductDetail();
     bindLogin();
   });
 

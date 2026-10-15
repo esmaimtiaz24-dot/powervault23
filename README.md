@@ -7,9 +7,12 @@ Premium lighting and power accessories storefront.
 This repository includes a **static demo** that works on GitHub Pages:
 
 - Home: `index.html`
-- Shop / Cart / Login / Checkout: `shop.html`, `cart.html`, `login.html`, `checkout.html`
+- Shop / Cart / Login / Checkout / Product: `shop.html`, `cart.html`, `login.html`, `checkout.html`, `product.html?id=1`
+- Admin demo (JS): `admin/login.html` → dashboard, products, orders, inventory, settings
 - Styles: `style.css`, `pages.css`
-- Cart demo uses browser `localStorage` (not the PHP database)
+- Cart / admin data use browser `localStorage` (not the PHP database)
+
+Demo admin login: `admin@powervault.pk` / `Admin@12345`
 
 ### Enable Pages
 
@@ -20,8 +23,8 @@ This repository includes a **static demo** that works on GitHub Pages:
    `https://esmaimtiaz24-dot.github.io/powervault23/`
 
 > **Important:** GitHub Pages only hosts static files (HTML/CSS/JS).  
-> Real PHP login, admin, and database cart **cannot run** on GitHub Pages.  
-> Use local XAMPP/WAMP or PHP hosting for the full store.
+> The JS admin/cart demo works on GitHub Pages.  
+> Real PHP + MySQL (server-side auth, uploads, email) still needs WAMP/PHP hosting.
 
 ## Full PHP store (local)
 
