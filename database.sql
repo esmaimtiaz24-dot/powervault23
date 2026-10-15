@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS powervault_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+﻿CREATE DATABASE IF NOT EXISTS powervault_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE powervault_db;
 CREATE TABLE IF NOT EXISTS users (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS products (
  price DECIMAL(12,2) NULL DEFAULT NULL,
  cost_price DECIMAL(12,2) NULL DEFAULT NULL,
  stock INT UNSIGNED NOT NULL DEFAULT 0,
- image_path VARCHAR(255) NULL,
+ image VARCHAR(255) NULL,
  active TINYINT(1) NOT NULL DEFAULT 1,
  featured TINYINT(1) NOT NULL DEFAULT 0,
  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -41,6 +41,10 @@ CREATE TABLE IF NOT EXISTS orders (
  total DECIMAL(12,2) NOT NULL,
  status ENUM('Pending','Confirmed','Processing','Dispatched','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
  payment_status VARCHAR(50) NOT NULL DEFAULT 'Unpaid',
+ payment_sender_name VARCHAR(150) NULL,
+ payment_sender_phone VARCHAR(40) NULL,
+ payment_txn_id VARCHAR(120) NULL,
+ payment_proof VARCHAR(255) NULL,
  tracking_number VARCHAR(120) NULL,
  tracking_url VARCHAR(500) NULL,
  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

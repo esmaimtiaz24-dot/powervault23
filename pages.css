@@ -323,6 +323,52 @@ a.footer-support-item:hover{color:var(--cyan)}
 
 .nav-link.active{color:var(--cyan)!important}
 
+.wallet-payment-panel{
+  display:none;
+  margin-top:14px;
+  padding:18px;
+  border:1px solid rgba(0,200,255,.28);
+  border-radius:14px;
+  background:linear-gradient(160deg,#0a1a2a,#06111d);
+}
+.wallet-payment-panel.is-open{display:block}
+.wallet-help{margin-bottom:16px}
+.wallet-help strong{display:block;color:#fff;font-size:15px;margin-bottom:6px}
+.wallet-help p{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.6}
+.wallet-numbers{display:flex;flex-wrap:wrap;gap:10px}
+.wallet-numbers span{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:#071929;
+  border:1px solid var(--line);
+  color:#e8f4ff;
+  font-size:12px;
+}
+.wallet-numbers b{color:var(--cyan)}
+.payment-proof-link{color:var(--cyan);font-size:12px}
+.payment-option{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px;
+  border:1px solid #00b7ff33;
+  border-radius:10px;
+  margin:10px 0;
+  background:#04111d;
+  cursor:pointer;
+}
+.payment-option:has(input:checked){
+  border-color:var(--cyan);
+  background:#062033;
+}
+.payment-option input{margin-top:4px;accent-color:var(--cyan)}
+.payment-option b,.payment-option small{display:block}
+.payment-option b{font-size:12px;color:#fff}
+.payment-option small{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.6}
+
 @media (max-width:767px){
   .pages-hero{min-height:560px}
   .pages-hero .hero-bg{object-position:60% center;opacity:.7}

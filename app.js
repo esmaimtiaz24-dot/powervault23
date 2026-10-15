@@ -189,6 +189,70 @@
     });
   };
 
+  const moneyExact = (n) =>
+    'Rs. ' +
+    Number(n).toLocaleString('en-PK', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  const bindWalletCheckout = (subtotal) => {
+    const radios = document.querySelectorAll('input[name="payment"]');
+    const panel = document.getElementById('walletPaymentFields');
+    const title = document.getElementById('walletTitle');
+    const help = document.getElementById('walletHelpText');
+    const fields = [
+      document.getElementById('payment_sender_name'),
+      document.getElementById('payment_sender_phone'),
+      document.getElementById('payment_txn_id'),
+      document.getElementById('payment_proof')
+    ];
+    const easypaisa = '03273822228';
+    const jazzcash = '03074364067';
+
+    const update = () => {
+      const method =
+        document.querySelector('input[name="payment"]:checked')?.value || 'cod';
+      const isWallet = method === 'easypaisa' || method === 'jazzcash';
+      const disc = isWallet ? Math.round(subtotal * 0.03 * 100) / 100 : 0;
+
+      const d = document.getElementById('discountPreview');
+      const t = document.getElementById('totalPreview');
+      if (d) d.textContent = moneyExact(disc);
+      if (t) t.textContent = moneyExact(subtotal - disc + SHIPPING);
+
+      if (panel) panel.classList.toggle('is-open', isWallet);
+
+      fields.forEach((el) => {
+        if (!el) return;
+        el.required = isWallet;
+      });
+
+      if (title && help) {
+        if (method === 'easypaisa') {
+          title.textContent = 'Easypaisa Payment Details';
+          help.textContent =
+            'Send the discounted total to ' +
+            easypaisa +
+            ' from your Easypaisa account using your registered phone number. No card details are needed. Then enter your account details and upload the payment screenshot.';
+        } else if (method === 'jazzcash') {
+          title.textContent = 'JazzCash Payment Details';
+          help.textContent =
+            'Send the discounted total to ' +
+            jazzcash +
+            ' from your JazzCash account using your registered phone number. No card details are needed. Then enter your account details and upload the payment screenshot.';
+        } else {
+          title.textContent = 'Mobile Wallet Payment';
+          help.textContent =
+            'Send the order total to our wallet number from your JazzCash / Easypaisa account (registered phone number). Then enter the transaction details and upload the payment screenshot.';
+        }
+      }
+    };
+
+    radios.forEach((r) => r.addEventListener('change', update));
+    update();
+  };
+
   const renderCheckoutPage = () => {
     const summary = document.getElementById('checkoutSummary');
     const form = document.getElementById('checkoutForm');
@@ -223,16 +287,37 @@
             (item) => `
           <div class="summary-line">
             <span>${item.name} × ${item.qty}</span>
-            <b>${money(item.line)}</b>
+            <b>${moneyExact(item.line)}</b>
           </div>`
           )
           .join('')}
-        <div class="summary-line"><span>Shipping</span><b>${money(SHIPPING)}</b></div>
-        <div class="summary-line total"><span>Total</span><b>${money(subtotal + SHIPPING)}</b></div>
+        <hr>
+        <div class="summary-line"><span>Subtotal</span><b>${moneyExact(subtotal)}</b></div>
+        <div class="summary-line"><span>Online discount</span><b id="discountPreview">Rs. 0.00</b></div>
+        <div class="summary-line"><span>Shipping</span><b>${moneyExact(SHIPPING)}</b></div>
+        <div class="summary-line total"><span>Total</span><b id="totalPreview">${moneyExact(subtotal + SHIPPING)}</b></div>
+        <p class="muted small">
+          Easypaisa/JazzCash orders receive a 3% discount. Payment is confirmed manually after you send from your registered wallet number.
+        </p>
+        <button class="btn btn-neon w-100 mt-3" type="submit">Place Order Securely →</button>
       </div>`;
+
+    bindWalletCheckout(subtotal);
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
+      const method =
+        form.querySelector('input[name="payment"]:checked')?.value || 'cod';
+      if (method === 'easypaisa' || method === 'jazzcash') {
+        const name = form.payment_sender_name?.value?.trim();
+        const phone = form.payment_sender_phone?.value?.trim();
+        const tid = form.payment_txn_id?.value?.trim();
+        const proof = form.payment_proof?.files?.[0];
+        if (!name || !phone || !tid || !proof) {
+          toast('Enter wallet name, phone, TID and upload screenshot.');
+          return;
+        }
+      }
       localStorage.removeItem(CART_KEY);
       updateCartBadges();
       window.location.href = 'order-success.html';
