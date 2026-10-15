@@ -1,0 +1,54 @@
+name: Compile and Deploy Single PHP Page
+
+on:
+  push:
+    branches:
+      - main # Change this to "master" if your primary branch uses the old naming scheme
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Compile PHP Template to HTML
+        run: |
+          mkdir _site
+          # Executes your template and outputs the static results into the target folder
+          php index.php > _site/index.html
+          
+          # Optional: If you have static assets like CSS, JS, or images, copy them into the build folder
+          # Uncomment the lines below by removing the '#' symbol if you have these asset folders:
+          # cp -r css/ _site/css/ 2>/dev/null || true
+          # cp -r js/ _site/js/ 2>/dev/null || true
+          # cp -r images/ _site/images/ 2>/dev/null || true
+          
+          # Prevents GitHub from trying to process your site with Jekyll engine
+          touch _site/.nojekyll
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
